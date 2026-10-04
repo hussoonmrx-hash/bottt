@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: bot_arf
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: PORT
+        value: 10000
+    healthCheckPath: /
