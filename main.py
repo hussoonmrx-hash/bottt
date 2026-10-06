@@ -237,14 +237,24 @@ class MRXBot(commands.Bot):
         )
 
     async def setup_hook(self):
-        # Load all Cogs
-        for filename in os.listdir('./cogs'):
-            if filename.endswith('.py'):
-                try:
-                    await self.load_extension(f'cogs.{filename[:-3]}')
-                    print(f"Loaded extension: {filename}")
-                except Exception as e:
-                    print(f"Failed to load extension {filename}: {e}")
+        import pathlib
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        print(f"CWD={os.getcwd()} FILE_DIR={base_dir} LIST={os.listdir(base_dir)}", flush=True)
+        cogs_dir = os.path.join(base_dir, 'cogs')
+        if not os.path.isdir(cogs_dir):
+            alt = os.path.join(base_dir, 'bot_arf', 'cogs')
+            if os.path.isdir(alt):
+                cogs_dir = alt
+        if not os.path.isdir(cogs_dir):
+            print(f"WARNING: cogs folder not found at {cogs_dir}, skipping cogs load", flush=True)
+        else:
+            for filename in os.listdir(cogs_dir):
+                if filename.endswith('.py'):
+                    try:
+                        await self.load_extension(f'cogs.{filename[:-3]}')
+                        print(f"Loaded extension: {filename}")
+                    except Exception as e:
+                        print(f"Failed to load extension {filename}: {e}")
         
         # Sync Slash Commands
         await self.tree.sync()
