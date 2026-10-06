@@ -259,15 +259,23 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game(name="ARF_"))
 
 if __name__ == '__main__':
-    token = os.getenv('BOT_TOKEN') or config.get('token')
+    import time
+    raw_token = os.getenv('BOT_TOKEN') or config.get('token') or ''
+    token = raw_token.strip().strip('"').strip("'")
     if not token or token == "YOUR_BOT_TOKEN_HERE":
         print("Please set the BOT_TOKEN environment variable in Railway or configure config.json")
-        import time; time.sleep(999999)
+        time.sleep(999999)
     else:
-        while True:
-            try:
-                start_keep_alive()  # Start HTTP server for Railway health check and activation
-                bot.run(token)
-            except Exception as e:
-                print(f"Error starting the bot: {e}")
-                import time; time.sleep(5)
+        print(f"BOT_TOKEN found (len={len(token)}), starting...", flush=True)
+        start_keep_alive()  # مرة واحدة فقط - قبل bot.run
+        try:
+            bot.run(token)
+        except discord.LoginFailure:
+            print("LoginFailure: التوكن غلط او ملغي. سوي Reset Token من Developer Portal وحطه في Railway Variables.", flush=True)
+            time.sleep(999999)
+        except discord.PrivilegedIntentsRequired:
+            print("PrivilegedIntentsRequired: فعل Presence + Server Members + Message Content من Developer Portal > Bot.", flush=True)
+            time.sleep(999999)
+        except Exception as e:
+            print(f"Bot crashed: {e}", flush=True)
+            raise
